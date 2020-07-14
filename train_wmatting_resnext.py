@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 import os
-os.environ['CUDA_VISIBLE_DEVICES']='0'
+os.environ['CUDA_VISIBLE_DEVICES']='1'
 import time
 import torch.nn as nn
 import torch.optim as optim
@@ -24,9 +24,9 @@ if __name__=='__main__':
     mkdir(tmp_path)
     train_dataset = dataset.Train_Dataset()
     val_dataset = dataset.Val_Dataset()
-    trainloader = data.DataLoader(train_dataset, batch_size=1, num_workers=2, shuffle=True)
-    valloader = data.DataLoader(val_dataset, batch_size=1, num_workers=2, shuffle=True)
-    netG=model.HAM(resnet=True)
+    trainloader = data.DataLoader(train_dataset, batch_size=2, num_workers=4, shuffle=True)
+    valloader = data.DataLoader(val_dataset, batch_size=1, num_workers=4, shuffle=True)
+    netG=model.HAM(resnet=False)
     netD=model.NLayerDiscriminator(use_sigmoid=False)
     netG=netG.cuda()
     netD=netD.cuda()
@@ -96,10 +96,10 @@ if __name__=='__main__':
                 t_ssim = 0
             g_loss.backward()
             optimizerG.step()
-        torch.save(netG.state_dict(), os.path.join(save_path,str(epoch)+'.ckpt'))
+        torch.save(netG.state_dict(), os.path.join(save_path,str(epoch)+'.nextckpt'))
         scheduler.step()
         netG.eval()
-        mkdir(os.path.join(tmp_path,str(epoch)+'Train'))
+        mkdir(os.path.join(tmp_path,str(epoch)+'TrainNext'))
         for idx,data in enumerate(valloader):
             img,name=data
             img=img.cuda()
@@ -109,7 +109,7 @@ if __name__=='__main__':
             pred=pred[0,0]*255.
             pred=np.clip(pred,0,255)
             pred=np.asarray(pred,np.uint8)
-            cv2.imwrite(os.path.join(tmp_path,str(epoch)+'Train',name[0]),pred)
+            cv2.imwrite(os.path.join(tmp_path,str(epoch)+'TrainNext',name[0]),pred)
 
 
 
